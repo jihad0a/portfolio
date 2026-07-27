@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en" x-data="{
+  projectId: 1,
+  dark: localStorage.getItem('theme')==='dark'||(!localStorage.getItem('theme')&&window.matchMedia('(prefers-color-scheme: dark)').matches),
+  scrolled: false,
+  mobileMenu: false,
+  progress: 0
+}" :class="{'dark':dark}" x-init="
+  projectId = parseInt(new URLSearchParams(window.location.search).get('project')) || 1;
+  $watch('dark', v => localStorage.setItem('theme', v ? 'dark' : 'light'));
+  window.addEventListener('scroll', () => {
+    scrolled = window.scrollY > 20;
+    progress = Math.min(100, Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100));
+  }, { passive: true });
+  $nextTick(()=>{const io=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target)}})},{threshold:.08,rootMargin:'0px 0px -30px 0px'});document.querySelectorAll('.reveal').forEach(el=>io.observe(el))});
+" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Jihad's project detail page."/>
+  <meta name="author" content="Jihad"/>
+  <meta property="og:title" content="Project — Jihad"/>
+  <meta property="og:type" content="article"/>
+  <title>Project — Jihad</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500&display=swap" rel="stylesheet"/>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { display: ['PT Sans','sans-serif'], body: ['DM Sans','sans-serif'] },
+          colors: { accent: '#006A4E', 'accent-light': '#00855f' }
+        }
+      }
+    }
+  </script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;}
+    html{font-family:'DM Sans',sans-serif;}
+    h1,h2,h3,h4,h5,h6{font-family:'PT Sans',sans-serif;}
+    ::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:#006A4E;border-radius:99px;}
+    body{transition:background-color .3s,color .3s;}
+    body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.4;}
+    .nav-link{position:relative;}
+    .nav-link::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:1.5px;background:currentColor;transition:width .25s cubic-bezier(.4,0,.2,1);}
+    .nav-link:hover::after{width:100%;}
+    .btn-primary{position:relative;overflow:hidden;}
+    .btn-primary::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:rgba(255,255,255,.18);transform:skewX(-20deg);transition:left .4s cubic-bezier(.4,0,.2,1);}
+    .btn-primary:hover::after{left:160%;}
+    [x-cloak]{display:none!important;}
+    .pf{position:relative;overflow:hidden;background:#e4e4e7;}
+    .pf img{width:100%;height:100%;object-fit:cover;display:block;}
+
+    /* Reading progress */
+    .progress-bar{position:fixed;top:0;left:0;height:3px;background:#006A4E;z-index:100;transition:width .1s linear;}
+
+    /* Reveal */
+    .reveal{opacity:0;transform:translateY(22px);transition:opacity .55s cubic-bezier(.4,0,.2,1),transform .55s cubic-bezier(.4,0,.2,1);}
+    .reveal.visible{opacity:1;transform:translateY(0);}
+    .d1{transition-delay:.07s}.d2{transition-delay:.14s}.d3{transition-delay:.21s}.d4{transition-delay:.28s}
+
+    /* Case study prose */
+    .prose-cs h2{font-family:'PT Sans',sans-serif;font-size:1.55rem;font-weight:700;margin:2.75rem 0 1rem;line-height:1.25;}
+    .prose-cs h3{font-family:'PT Sans',sans-serif;font-size:1.15rem;font-weight:700;margin:2rem 0 .6rem;line-height:1.3;color:#006A4E;}
+    .prose-cs p{margin:0 0 1.4rem;line-height:1.82;color:#52525b;}
+    .dark .prose-cs p{color:#a1a1aa;}
+    .prose-cs ul{margin:0 0 1.4rem 1.5rem;list-style:disc;}
+    .prose-cs li{margin-bottom:.45rem;line-height:1.7;color:#52525b;}
+    .dark .prose-cs li{color:#a1a1aa;}
+    .prose-cs blockquote{border-left:3px solid #006A4E;padding:.75rem 1.25rem;margin:0 0 1.8rem;background:#f0faf4;border-radius:0 8px 8px 0;}
+    .dark .prose-cs blockquote{background:#1a2720;}
+    .prose-cs blockquote p{color:#52525b;font-style:italic;margin:0;}
+    .dark .prose-cs blockquote p{color:#a1a1aa;}
+    .prose-cs hr{border:none;border-top:1px solid #e4e4e7;margin:2.5rem 0;}
+    .dark .prose-cs hr{border-top-color:#27272a;}
+    .prose-cs a{color:#006A4E;text-decoration:underline;text-underline-offset:3px;}
+    .card-h{transition:transform .28s cubic-bezier(.4,0,.2,1),border-color .18s;}
+    .card-h:hover{transform:translateY(-4px);}
+  </style>
+</head>
+<body class="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-body antialiased">
+
+  <div class="progress-bar" :style="`width:${progress}%`" role="progressbar" :aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100" aria-label="Reading progress"></div>
+
+  <header class="fixed top-0.5 left-0 right-0 z-50 transition-all duration-300"
+    :class="scrolled ? 'bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md shadow-sm shadow-black/5' : 'bg-transparent'">
+    <nav class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between" aria-label="Main navigation">
+      <a href="index.html" class="font-display font-bold text-xl tracking-tight z-10">
+        <span class="text-zinc-900 dark:text-white">Jih</span><span class="text-accent">ad</span>
+      </a>
+      <ul class="hidden md:flex items-center gap-8 text-sm font-medium" role="list">
+        <li><a href="index.html#services" class="nav-link text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">Services</a></li>
+        <li><a href="projects.html" class="nav-link text-accent font-medium">Work</a></li>
+        <li><a href="index.html#about" class="nav-link text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">About</a></li>
+        <li><a href="blog.html" class="nav-link text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">Blog</a></li>
+        <li><a href="index.html#contact" class="nav-link text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">Contact</a></li>
+      </ul>
+      <div class="flex items-center gap-3">
+        <button @click="dark=!dark" class="w-9 h-9 flex items-center justify-center rounded-full border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" :aria-label="dark?'Light mode':'Dark mode'">
+          <svg x-show="!dark" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+          <svg x-show="dark" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>
+        </button>
+        <a href="index.html#contact" class="hidden md:inline-flex items-center gap-2 btn-primary bg-accent text-white text-sm font-medium px-5 py-2 rounded-full hover:bg-accent-light transition-colors">Hire me →</a>
+        <button @click="mobileMenu=!mobileMenu" class="md:hidden w-9 h-9 flex items-center justify-center rounded-full border border-zinc-200 dark:border-zinc-800" aria-label="Toggle menu">
+          <svg x-show="!mobileMenu" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          <svg x-show="mobileMenu" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </nav>
+    <div x-show="mobileMenu" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-2" class="md:hidden bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-900">
+      <ul class="flex flex-col px-6 py-4 gap-4 text-sm font-medium" role="list">
+        <li><a href="index.html#services" @click="mobileMenu=false" class="block text-zinc-700 dark:text-zinc-300">Services</a></li>
+        <li><a href="projects.html" @click="mobileMenu=false" class="block text-accent font-medium">Work</a></li>
+        <li><a href="index.html#about" @click="mobileMenu=false" class="block text-zinc-700 dark:text-zinc-300">About</a></li>
+        <li><a href="blog.html" @click="mobileMenu=false" class="block text-zinc-700 dark:text-zinc-300">Blog</a></li>
+        <li><a href="index.html#contact" @click="mobileMenu=false" class="block text-zinc-700 dark:text-zinc-300">Contact</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- Project 1: Catering Business Support -->
+    <article x-show="projectId === 1">
+      <header class="pt-32 pb-10 max-w-4xl mx-auto px-6">
+        <a href="projects.html" class="inline-flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 hover:text-accent transition-colors mb-8">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"/></svg>
+          Back to projects
+        </a>
+        <div class="flex flex-wrap items-center gap-3 mb-6">
+          <span class="text-xs bg-orange-50 dark:bg-zinc-800 text-accent border border-orange-200 dark:border-zinc-700 px-2.5 py-1 rounded-full">Invoicing</span>
+          <span class="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-2.5 py-1 rounded-full">Documents</span>
+          <span class="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-2.5 py-1 rounded-full">Image Editing</span>
+          <span class="text-xs text-zinc-400 ml-1">2025 · Ongoing</span>
+        </div>
+        <h1 class="reveal font-display font-bold text-4xl md:text-5xl lg:text-6xl text-zinc-900 dark:text-white leading-tight mb-6">Catering Business Support Services</h1>
+        <p class="reveal d1 text-xl text-zinc-500 dark:text-zinc-400 leading-relaxed mb-10 max-w-2xl">Ongoing digital support for three UK-based catering companies — handling invoices, PDFs, image editing, documents, and everything in between.</p>
+        <div class="reveal d2 grid grid-cols-2 md:grid-cols-4 gap-4 py-8 border-t border-b border-zinc-100 dark:border-zinc-900">
+          <div><p class="text-xs text-zinc-400 uppercase tracking-widest mb-1">Clients</p><p class="font-medium text-zinc-900 dark:text-white text-sm">3 Catering Companies</p></div>
+          <div><p class="text-xs text-zinc-400 uppercase tracking-widest mb-1">Role</p><p class="font-medium text-zinc-900 dark:text-white text-sm">Digital Support Specialist</p></div>
+          <div><p class="text-xs text-zinc-400 uppercase tracking-widest mb-1">Timeline</p><p class="font-medium text-zinc-900 dark:text-white text-sm">Ongoing</p></div>
+          <div><p class="text-xs text-zinc-400 uppercase tracking-widest mb-1">Deliverables</p><p class="font-medium text-zinc-900 dark:text-white text-sm">Invoices, PDFs, Documents</p></div>
+        </div>
+      </header>
+      <div class="max-w-6xl mx-auto px-6 mb-16">
+        <div class="reveal pf w-full h-72 md:h-[480px] rounded-3xl">
+          <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=1400&q=80" alt="Catering Business Support" loading="eager"/>
+        </div>
+      </div>
+      <div class="max-w-3xl mx-auto px-6 pb-4 prose-cs">
+        <h2>The brief</h2>
+        <p>Three UK-based catering companies were spending 8-10 hours per week on administrative and document work. Monthly invoices needed editing, PDF delivery notes required formatting, supplier images needed logo removal, and tax documents needed processing. They needed someone reliable to handle it all.</p>
+        <p>My mandate was simple: take over all digital document tasks and deliver every file clean, correct, and on time.</p>
+        <h2>What I do</h2>
+        <ul>
+          <li><strong>Invoice editing:</strong> Monthly invoice batches formatted and corrected for each client's branding.</li>
+          <li><strong>PDF delivery notes:</strong> Clean, print-ready PDFs for every delivery, formatted consistently.</li>
+          <li><strong>Image editing:</strong> Removing logos from supplier images, resizing photos for menus and social media.</li>
+          <li><strong>Tax documents:</strong> Processing spreadsheets, formatting tax sheets, preparing client-ready files.</li>
+          <li><strong>General document work:</strong> Menu updates, flyer preparation, document formatting.</li>
+        </ul>
+        <blockquote><p>"Jihad handles our monthly invoice editing and PDF documents reliably and quickly. Every file comes back clean and exactly right. He has saved us hours every week." — A. Rahman</p></blockquote>
+        <h2>Results</h2>
+        <ul>
+          <li><strong>Time saved:</strong> 8-10 hours/week per client</li>
+          <li><strong>Turnaround:</strong> Same-day delivery on most tasks</li>
+          <li><strong>Error rate:</strong> Near-zero after verification step</li>
+          <li><strong>Client retention:</strong> Ongoing monthly engagement</li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- Project 2: MissAngelic -->
+    <article x-show="projectId === 2">
+      <header class="pt-32 pb-10 max-w-4xl mx-auto px-6">
+        <a href="projects.html" class="inline-flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 hover:text-accent transition-colors mb-8">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"/></svg>
+          Back to projects
+        </a>
+        <div class="flex flex-wrap items-center gap-3 mb-6">
+          <span class="text-xs bg-orange-50 dark:bg-zinc-800 text-accent border border-orange-200 dark:border-zinc-700 px-2.5 py-1 rounded-full">E-commerce</span>
+          <span class="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-2.5 py-1 rounded-full">MySQL</span>
+          <span class="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-2.5 py-1 rounded-full">Admin Panel</span>
+          <span class="text-xs text-zinc-400 ml-1">2025</span>
+        </div>
+        <h1 class="reveal font-display font-bold text-4xl md:text-5xl lg:text-6xl text-zinc-900 dark:text-white leading-tight mb-6">MissAngelic Jewelry E-commerce Store</h1>
+        <p class="reveal d1 text-xl text-zinc-500 dark:text-zinc-400 leading-relaxed mb-10 max-w-2xl">Complete women's jewelry e-commerce platform with shopping cart, three-step checkout, wishlist, live search, and full admin dashboard.</p>
+        <div class="reveal d2 grid grid-cols-2 md:grid-cols-4 gap-4 py-8 border-t border-b border-zinc-100 dark:border-zinc-900">
+          <div><p class="text-xs text-zinc-400 uppercase tracking-widest mb-1">Client</p><p class="font-medium text-zinc-900 dark:text-white text-sm">MissAngelic</p></div>
+          <div><p class="text-xs text-zinc-400 uppercase tracking-widest mb-1">Role</p><p class="font-medium text-zinc-900 dark:text-white text-sm">Full-Stack Developer</p></div>
+          <div><p class="text-xs text-zinc-400 uppercase tracking-widest mb-1">Stack</p><p class="font-medium text-zinc-900 dark:text-white text-sm">React + Node.js + MySQL</p></div>
+          <div><p class="text-xs text-zinc-400 uppercase tracking-widest mb-1">Deliverables</p><p class="font-medium text-zinc-900 dark:text-white text-sm">Full e-commerce platform</p></div>
+        </div>
+      </header>
+      <div class="max-w-6xl mx-auto px-6 mb-16">
+        <div class="reveal pf w-full h-72 md:h-[480px] rounded-3xl">
+          <img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=1400&q=80" alt="MissAngelic Jewelry Store" loading="eager"/>
+        </div>
+      </div>
+      <div class="max-w-3xl mx-auto px-6 pb-4 prose-cs">
+        <h2>The brief</h2>
+        <p>MissAngelic needed a complete e-commerce platform for their women's jewelry collection. They wanted a modern online store with shopping cart, secure checkout, customer accounts, and a powerful admin panel.</p>
+        <h2>Key features</h2>
+        <ul>
+          <li><strong>Shopping cart</strong> with real-time quantity updates and price calculation</li>
+          <li><strong>Three-step checkout</strong> — cart review, shipping, payment confirmation</li>
+          <li><strong>Wishlist</strong> — customers can save items for later</li>
+          <li><strong>Live search</strong> with instant product filtering</li>
+          <li><strong>Admin dashboard</strong> — manage products, orders, customers, inventory</li>
+          <li><strong>MySQL database</strong> for reliable data storage</li>
+        </ul>
+        <p>Visit the live site: <a href="http://missangelic.com/" target="_blank">missangelic.com</a></p>
+      </div>
+    </article>
+
+    <!-- Project 3: Paul Catering -->
+    <article x-show="projectId === 3">
+      <header class="pt-32 pb-10 max-w-4xl mx-auto px-6">
+        <a href="projects.html" class="inline-flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 hover:text-accent transition-colors mb-8">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"/></svg>
+          Back to projects
+        </a>
+        <div class="flex flex-wrap items-center gap-3 mb-6">
+          <span class="text-xs bg-orange-50 dark:bg-zinc-800 text-accent border border-orange-200 dark:border-zinc-700 px-2.5 py-1 rounded-full">Website</span>
+          <span class="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-2.5 py-1 rounded-full">Admin Panel</span>
+          <span class="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-2.5 py-1 rounded-full">Booking</span>
+          <span class="text-xs text-zinc-400 ml-1">2025</span>
+        </div>
+        <h1 class="reveal font-display font-bold text-4xl md:text-5xl lg:text-6xl text-zinc-900 dark:text-white leading-tight mb-6">Paul Catering House Limited</h1>
+        <p class="reveal d1 text-xl text-zinc-500 dark:text-zinc-400 leading-relaxed mb-10 max-w-2xl">Complete catering website with booking system, menu management, gallery, and custom admin panel for daily content management.</p>
+        <div class="reveal d2 grid grid-cols-2 md:grid-cols-4 gap-4 py-8 border-t border-b border-zinc-100 dark:border-zinc-900">
+          <div><p class="text-xs text-zinc-400 uppercase tracking-widest mb-1">Client</p><p class="font-medium text-zinc-900 dark:text-white text-sm">Paul Catering House Ltd</p></div>
+          <div><p class="text-xs text-zinc-400 uppercase tracking-widest mb-1">Role</p><p class="font-medium text-zinc-900 dark:text-white text-sm">Full-Stack Developer</p></div>
+          <div><p class="text-xs text-zinc-400 uppercase tracking-widest mb-1">Timeline</p><p class="font-medium text-zinc-900 dark:text-white text-sm">2025</p></div>
+          <div><p class="text-xs text-zinc-400 uppercase tracking-widest mb-1">Deliverables</p><p class="font-medium text-zinc-900 dark:text-white text-sm">Website + Admin Panel</p></div>
+        </div>
+      </header>
+      <div class="max-w-6xl mx-auto px-6 mb-16">
+        <div class="reveal pf w-full h-72 md:h-[480px] rounded-3xl">
+          <img src="https://images.unsplash.com/photo-1555244162-803834f70033?w=1400&q=80" alt="Paul Catering House" loading="eager"/>
+        </div>
+      </div>
+      <div class="max-w-3xl mx-auto px-6 pb-4 prose-cs">
+        <h2>The brief</h2>
+        <p>Paul Catering House Limited needed a professional website showcasing their catering services with an online booking system, plus a custom admin panel for the team to manage content without technical help.</p>
+        <h2>Key features</h2>
+        <ul>
+          <li><strong>Booking system</strong> — clients request catering services directly through the website</li>
+          <li><strong>Menu management</strong> — dynamic menu pages updated via admin panel</li>
+          <li><strong>Gallery</strong> — photo gallery showcasing their work</li>
+          <li><strong>Custom admin panel</strong> — manage content, bookings, menus, and enquiries</li>
+        </ul>
+        <p>Visit the live site: <a href="http://paulcateringhouseltd.com/" target="_blank">paulcateringhouseltd.com</a></p>
+      </div>
+    </article>
+
+    <!-- CTA -->
+    <section class="py-24">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="bg-zinc-900 dark:bg-zinc-800 rounded-3xl p-10 md:p-14 text-center relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-64 h-64 bg-accent/20 rounded-full blur-3xl pointer-events-none"></div>
+          <div class="absolute bottom-0 left-0 w-40 h-40 bg-accent/10 rounded-full blur-2xl pointer-events-none"></div>
+          <div class="relative z-10">
+            <p class="text-xs font-medium text-accent tracking-widest uppercase mb-4">Ready to start?</p>
+            <h2 class="font-display font-bold text-3xl md:text-4xl text-white mb-4">Need something built?</h2>
+            <p class="text-zinc-400 max-w-md mx-auto mb-8">I'm available for new projects. Tell me about what you need and let's see if I can help.</p>
+            <a href="index.html#contact" class="inline-flex items-center gap-2 btn-primary bg-accent text-white font-medium px-8 py-3.5 rounded-full hover:bg-accent-light transition-colors">Start a project →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="border-t border-zinc-100 dark:border-zinc-900">
+    <div class="max-w-6xl mx-auto px-6 py-8 text-center">
+      <p class="text-sm text-zinc-400">© <span id="yr"></span> Jihad. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('yr').textContent = new Date().getFullYear();
+  </script>
+
+</body>
+</html>

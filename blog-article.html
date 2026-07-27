@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en" x-data="{ articleId: 1, dark: localStorage.getItem('theme')==='dark'||(!localStorage.getItem('theme')&&window.matchMedia('(prefers-color-scheme: dark)').matches), scrolled:false, mobileMenu:false, progress:0 }" :class="{'dark':dark}" x-init="articleId=parseInt(new URLSearchParams(window.location.search).get('article'))||1;$watch('dark',v=>localStorage.setItem('theme',v?'dark':'light'));window.addEventListener('scroll',()=>{scrolled=window.scrollY>20;progress=Math.min(100,Math.round((window.scrollY/(document.body.scrollHeight-window.innerHeight))*100));},{passive:true});$nextTick(()=>{const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:.1,rootMargin:'0px 0px -40px 0px'});document.querySelectorAll('.reveal').forEach(el=>obs.observe(el))})" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Jihad's blog — articles on catering digital support, documents, and websites."/>
+  <meta name="author" content="Jihad"/>
+  <meta property="og:title" content="Blog — Jihad"/>
+  <meta property="og:type" content="article"/>
+  <title>Blog Article — Jihad</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500&display=swap" rel="stylesheet"/>
+  <script>
+    tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{display:['PT Sans','sans-serif'],body:['DM Sans','sans-serif']},colors:{accent:'#006A4E','accent-light':'#00855f'}}}}
+  </script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;}
+    html{font-family:'DM Sans',sans-serif;}
+    h1,h2,h3,h4,h5,h6{font-family:'PT Sans',sans-serif;}
+    ::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:#006A4E;border-radius:99px;}
+    body{transition:background-color .3s,color .3s;}
+    body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.4;}
+    .nav-link{position:relative;}
+    .nav-link::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:1.5px;background:currentColor;transition:width .25s cubic-bezier(.4,0,.2,1);}
+    .nav-link:hover::after{width:100%;}
+    .btn-primary{position:relative;overflow:hidden;}
+    .btn-primary::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:rgba(255,255,255,.18);transform:skewX(-20deg);transition:left .4s cubic-bezier(.4,0,.2,1);}
+    .btn-primary:hover::after{left:160%;}
+    [x-cloak]{display:none!important;}
+    .pf{position:relative;overflow:hidden;background:#e4e4e7;}
+    .pf img{width:100%;height:100%;object-fit:cover;display:block;}
+    .prose-article h2{font-family:'PT Sans',sans-serif;font-size:1.6rem;font-weight:700;color:inherit;margin:2.5rem 0 1rem;line-height:1.25;}
+    .prose-article h3{font-family:'PT Sans',sans-serif;font-size:1.2rem;font-weight:700;margin:2rem 0 .75rem;line-height:1.3;}
+    .prose-article p{margin:0 0 1.4rem;line-height:1.8;color:#52525b;}
+    .dark .prose-article p{color:#a1a1aa;}
+    .prose-article ul{margin:0 0 1.4rem 1.5rem;list-style:disc;}
+    .prose-article li{margin-bottom:.4rem;line-height:1.7;color:#52525b;}
+    .dark .prose-article li{color:#a1a1aa;}
+    .prose-article pre{background:#18181b;color:#e4e4e7;border-radius:12px;padding:1.25rem 1.5rem;overflow-x:auto;font-size:.85rem;line-height:1.7;margin:0 0 1.6rem;}
+    .prose-article code:not(pre code){background:#f4f4f5;color:#006A4E;padding:.15em .4em;border-radius:4px;font-size:.875em;}
+    .dark .prose-article code:not(pre code){background:#27272a;}
+    .prose-article blockquote{border-left:3px solid #006A4E;padding:.75rem 1.25rem;margin:0 0 1.6rem;background:#f0faf4;border-radius:0 8px 8px 0;}
+    .dark .prose-article blockquote{background:#1a2720;}
+    .prose-article blockquote p{color:#52525b;font-style:italic;margin:0;}
+    .dark .prose-article blockquote p{color:#a1a1aa;}
+    .prose-article a{color:#006A4E;text-decoration:underline;text-underline-offset:3px;}
+    .prose-article hr{border:none;border-top:1px solid #e4e4e7;margin:2.5rem 0;}
+    .dark .prose-article hr{border-top-color:#27272a;}
+    .progress-bar{position:fixed;top:0;left:0;height:3px;background:#006A4E;z-index:100;transition:width .1s;}
+    .reveal{opacity:0;transform:translateY(20px);transition:opacity .5s cubic-bezier(.4,0,.2,1),transform .5s cubic-bezier(.4,0,.2,1);}
+    .reveal.visible{opacity:1;transform:translateY(0);}
+  </style>
+</head>
+<body class="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-body antialiased">
+
+  <div class="progress-bar" :style="`width:${progress}%`" role="progressbar"></div>
+
+  <header class="fixed top-0.5 left-0 right-0 z-50 transition-all duration-300"
+    :class="scrolled?'bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md shadow-sm shadow-black/5':'bg-transparent'">
+    <nav class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a href="index.html" class="font-display font-bold text-xl tracking-tight z-10">
+        <span class="text-zinc-900 dark:text-white">Jih</span><span class="text-accent">ad</span>
+      </a>
+      <ul class="hidden md:flex items-center gap-8 text-sm font-medium">
+        <li><a href="index.html#services" class="nav-link text-zinc-600 dark:text-zinc-400">Services</a></li>
+        <li><a href="projects.html" class="nav-link text-zinc-600 dark:text-zinc-400">Work</a></li>
+        <li><a href="index.html#about" class="nav-link text-zinc-600 dark:text-zinc-400">About</a></li>
+        <li><a href="blog.html" class="nav-link text-accent font-medium">Blog</a></li>
+        <li><a href="index.html#contact" class="nav-link text-zinc-600 dark:text-zinc-400">Contact</a></li>
+      </ul>
+      <div class="flex items-center gap-3">
+        <button @click="dark=!dark" class="w-9 h-9 flex items-center justify-center rounded-full border border-zinc-200 dark:border-zinc-800"><svg x-show="!dark" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg><svg x-show="dark" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg></button>
+        <a href="index.html#contact" class="hidden md:inline-flex items-center gap-2 btn-primary bg-accent text-white text-sm font-medium px-5 py-2 rounded-full">Hire me →</a>
+        <button @click="mobileMenu=!mobileMenu" class="md:hidden w-9 h-9 flex items-center justify-center rounded-full border border-zinc-200 dark:border-zinc-800"><svg x-show="!mobileMenu" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg><svg x-show="mobileMenu" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+    </nav>
+    <div x-show="mobileMenu" x-cloak class="md:hidden bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-900">
+      <ul class="flex flex-col px-6 py-4 gap-4 text-sm font-medium">
+        <li><a href="index.html#services" @click="mobileMenu=false" class="block text-zinc-700 dark:text-zinc-300">Services</a></li>
+        <li><a href="projects.html" @click="mobileMenu=false" class="block text-zinc-700 dark:text-zinc-300">Work</a></li>
+        <li><a href="index.html#about" @click="mobileMenu=false" class="block text-zinc-700 dark:text-zinc-300">About</a></li>
+        <li><a href="blog.html" class="block text-accent font-medium">Blog</a></li>
+        <li><a href="index.html#contact" @click="mobileMenu=false" class="block text-zinc-700 dark:text-zinc-300">Contact</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ===== Article 1: Digital Assistant ===== -->
+    <div x-show="articleId === 1">
+    <article>
+      <header class="pt-32 pb-12 max-w-3xl mx-auto px-6">
+        <a href="blog.html" class="inline-flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 hover:text-accent mb-8">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"/></svg>
+          Back to blog
+        </a>
+        <div class="flex items-center gap-3 mb-5">
+          <span class="text-xs bg-orange-50 dark:bg-zinc-800 text-accent border border-orange-200 dark:border-zinc-700 px-2.5 py-1 rounded-full">Catering</span>
+          <span class="text-xs text-zinc-400">Mar 8, 2025 · 5 min read</span>
+        </div>
+        <h1 class="font-display font-bold text-4xl md:text-5xl text-zinc-900 dark:text-white leading-tight mb-6">What catering businesses should look for in a digital assistant</h1>
+        <p class="text-xl text-zinc-500 dark:text-zinc-400 leading-relaxed mb-8">Not every business needs a full-time employee. Here is how to find the right person to handle your digital tasks.</p>
+        <div class="flex items-center gap-4 py-6 border-t border-b border-zinc-100 dark:border-zinc-900">
+          <div class="pf w-12 h-12 rounded-full shrink-0"><img src="jihad.jpg" alt="Jihad" loading="lazy"/></div>
+          <div><p class="font-medium text-zinc-900 dark:text-white text-sm">Jihad</p><p class="text-xs text-zinc-500">Web Developer &amp; Catering Business Support</p></div>
+        </div>
+      </header>
+      <div class="max-w-4xl mx-auto px-6 mb-12">
+        <div class="pf w-full h-72 md:h-96 rounded-2xl"><img src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=1200&q=80" alt="Digital workplace" loading="lazy"/></div>
+      </div>
+      <div class="max-w-3xl mx-auto px-6 pb-16 prose-article">
+        <h2>Why digital support matters for catering businesses</h2>
+        <p>Catering businesses are moving fast — events, deliveries, menus, invoices, staff coordination. The one thing every owner I've worked with tells me is: the admin is the bottleneck.</p>
+        <p>From editing monthly invoices to formatting PDF delivery notes, removing logos from images, and managing tax spreadsheets — these tasks pile up fast.</p>
+        <h2>What a good digital assistant actually does</h2>
+        <ul>
+          <li><strong>Invoice editing.</strong> Monthly invoices need formatting, corrections, and client-specific customisation.</li>
+          <li><strong>PDF and document work.</strong> Delivery notes, order confirmations, tax sheets, menu PDFs.</li>
+          <li><strong>Image editing.</strong> Removing logos, resizing photos for menus and social media.</li>
+          <li><strong>Website updates.</strong> Menu changes, pricing, adding new pages.</li>
+          <li><strong>Admin panel management.</strong> Keeping booking systems and order dashboards in order.</li>
+        </ul>
+        <h2>What to look for when hiring digital support</h2>
+        <ul>
+          <li><strong>Reliability over speed.</strong> Consistent delivery is worth more than fast but inconsistent work.</li>
+          <li><strong>Attention to detail.</strong> A single error can cause confusion with a client.</li>
+          <li><strong>Industry understanding.</strong> Someone who works with catering needs less hand-holding.</li>
+          <li><strong>Communication.</strong> They tell you when it's done and ask when unclear.</li>
+        </ul>
+        <hr/>
+        <p><em>If this was helpful, reach out via the contact form. 🍽️</em></p>
+      </div>
+    </article>
+    </div>
+
+    <!-- ===== Article 2: Invoices, PDFs and Documents ===== -->
+    <div x-show="articleId === 2">
+    <article>
+      <header class="pt-32 pb-12 max-w-3xl mx-auto px-6">
+        <a href="blog.html" class="inline-flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 hover:text-accent mb-8">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"/></svg>
+          Back to blog
+        </a>
+        <div class="flex items-center gap-3 mb-5">
+          <span class="text-xs bg-orange-50 dark:bg-zinc-800 text-accent border border-orange-200 dark:border-zinc-700 px-2.5 py-1 rounded-full">Documents</span>
+          <span class="text-xs text-zinc-400">Feb 21, 2025 · 6 min read</span>
+        </div>
+        <h1 class="font-display font-bold text-4xl md:text-5xl text-zinc-900 dark:text-white leading-tight mb-6">Handling invoices, PDFs, and documents for catering businesses</h1>
+        <p class="text-xl text-zinc-500 dark:text-zinc-400 leading-relaxed mb-8">From monthly invoices to delivery notes and tax sheets — my approach to keeping catering paperwork clean and on time.</p>
+        <div class="flex items-center gap-4 py-6 border-t border-b border-zinc-100 dark:border-zinc-900">
+          <div class="pf w-12 h-12 rounded-full shrink-0"><img src="jihad.jpg" alt="Jihad" loading="lazy"/></div>
+          <div><p class="font-medium text-zinc-900 dark:text-white text-sm">Jihad</p><p class="text-xs text-zinc-500">Web Developer &amp; Catering Business Support</p></div>
+        </div>
+      </header>
+      <div class="max-w-4xl mx-auto px-6 mb-12">
+        <div class="pf w-full h-72 md:h-96 rounded-2xl"><img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=1200&q=80" alt="Document processing" loading="lazy"/></div>
+      </div>
+      <div class="max-w-3xl mx-auto px-6 pb-16 prose-article">
+        <h2>The document workload in catering</h2>
+        <p>Catering businesses generate a surprising amount of paperwork. Every client event needs invoices, delivery notes, order confirmations, menu sheets, and tax documentation. When you are running multiple events per week, the document workload adds up fast.</p>
+        <h2>Monthly invoice processing</h2>
+        <p>Each month, I receive a batch of invoices that need formatting, branding updates, and client-specific customisation. My process: maintain templates for each client, batch process all invoices in one session, and double-check every detail before delivery.</p>
+        <h2>PDF delivery notes and documents</h2>
+        <p>Delivery notes need to be clean, professional, and print-ready. I format PDFs with consistent margins, clear headers, and proper branding. For tax documents, I ensure spreadsheets are correctly formatted and calculations are verified.</p>
+        <h2>Image editing for documents</h2>
+        <p>A lot of document work involves images — removing logos from supplier photos, resizing images for menus, preparing visuals for flyers. I handle this as part of the document workflow so everything comes back ready to use.</p>
+        <blockquote><p>"From editing our delivery note PDFs to removing logos from images, Jihad does everything we send him quickly and correctly." — S. Alam, Restaurant Director</p></blockquote>
+        <h2>Why catering businesses outsource this</h2>
+        <p>The main reason is time. An owner spending 8-10 hours a week on documents could be spending that time in the kitchen, with clients, or growing the business.</p>
+        <hr/>
+        <p><em>Need help with catering documents? Reach out via the contact form. 📄</em></p>
+      </div>
+    </article>
+    </div>
+
+    <!-- ===== Article 3: Why your catering business needs a website ===== -->
+    <div x-show="articleId === 3">
+    <article>
+      <header class="pt-32 pb-12 max-w-3xl mx-auto px-6">
+        <a href="blog.html" class="inline-flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 hover:text-accent mb-8">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"/></svg>
+          Back to blog
+        </a>
+        <div class="flex items-center gap-3 mb-5">
+          <span class="text-xs bg-orange-50 dark:bg-zinc-800 text-accent border border-orange-200 dark:border-zinc-700 px-2.5 py-1 rounded-full">Website</span>
+          <span class="text-xs text-zinc-400">Jan 14, 2025 · 4 min read</span>
+        </div>
+        <h1 class="font-display font-bold text-4xl md:text-5xl text-zinc-900 dark:text-white leading-tight mb-6">Why your catering business needs a proper website in 2026</h1>
+        <p class="text-xl text-zinc-500 dark:text-zinc-400 leading-relaxed mb-8">Still taking orders by phone only? Here is what a proper catering website with a booking system can do for your business.</p>
+        <div class="flex items-center gap-4 py-6 border-t border-b border-zinc-100 dark:border-zinc-900">
+          <div class="pf w-12 h-12 rounded-full shrink-0"><img src="jihad.jpg" alt="Jihad" loading="lazy"/></div>
+          <div><p class="font-medium text-zinc-900 dark:text-white text-sm">Jihad</p><p class="text-xs text-zinc-500">Web Developer &amp; Catering Business Support</p></div>
+        </div>
+      </header>
+      <div class="max-w-4xl mx-auto px-6 mb-12">
+        <div class="pf w-full h-72 md:h-96 rounded-2xl"><img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&q=80" alt="Catering website" loading="lazy"/></div>
+      </div>
+      <div class="max-w-3xl mx-auto px-6 pb-16 prose-article">
+        <h2>Phone-only is costing you business</h2>
+        <p>If your catering business still relies on phone calls and text messages to take orders, you are losing potential clients every day. In 2026, people expect to browse a menu, check availability, and enquire online.</p>
+        <h2>What a catering website should have</h2>
+        <ul>
+          <li><strong>Menu display:</strong> Clear, appetising menu pages that are easy to update.</li>
+          <li><strong>Online booking system:</strong> Clients can request catering directly through the site.</li>
+          <li><strong>Photo gallery:</strong> Showcase your work with a professional gallery.</li>
+          <li><strong>Contact form:</strong> Structured enquiries with all info needed upfront.</li>
+          <li><strong>Admin panel:</strong> So you can update menus and manage bookings yourself.</li>
+        </ul>
+        <h2>The business impact</h2>
+        <p>For Paul Catering House Limited, I built a complete website with booking system and admin panel. Enquiries now come in with all details pre-filled, menus are managed through a simple panel, and the team spends less time on the phone.</p>
+        <blockquote><p>"We asked Jihad to build our catering website with a booking system and admin panel. He delivered everything exactly as we described and we now manage it all ourselves." — F. Akhter, Catering Manager</p></blockquote>
+        <h2>It doesn't have to be expensive</h2>
+        <p>A proper catering website with a booking system and admin panel is achievable on a reasonable budget. One extra booking from the website can cover the cost for months.</p>
+        <hr/>
+        <p><em>Ready to get online? Get in touch and let's talk about what your business needs. 🌐</em></p>
+      </div>
+    </article>
+    </div>
+
+  </main>
+
+  <footer class="border-t border-zinc-100 dark:border-zinc-900">
+    <div class="max-w-6xl mx-auto px-6 py-8 text-center">
+      <p class="text-sm text-zinc-400">© <span id="yr"></span> Jihad. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('yr').textContent = new Date().getFullYear();
+  </script>
+
+</body>
+</html>
