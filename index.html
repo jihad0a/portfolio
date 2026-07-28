@@ -710,11 +710,12 @@ document.addEventListener('DOMContentLoaded', function() {
   function desktopAnim() {
   var hero = q('#hero');
   if (hero) {
-    // Make hero content immediately visible (CSS hides .reveal, GSAP overrides)
+    // Make hero content immediately visible — OVERRIDE CSS opacity:0 directly
     hero.querySelectorAll('.reveal').forEach(function(el) {
-      gsap.set(el, { opacity: 1, y: 0, clearProps: 'opacity,transform' });
+      el.style.opacity = '1';
+      el.style.transform = 'translateY(0)';
     });
-
+    // Hero parallax — image drifts up, text drifts slightly
     // Hero parallax: profile image moves up slower on scroll
     var heroImg = hero.querySelector('.pf img');
     if (heroImg) {
