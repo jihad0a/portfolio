@@ -646,7 +646,7 @@ function app() {
         }
       }, { passive: true });
 
-      // counter animation — keep as IntersectionObserver
+      // counter animation — trigger when visible
       const cntObs = new IntersectionObserver(entries => {
         entries.forEach(e => {
           if (!e.isIntersecting) return;
@@ -664,7 +664,7 @@ function app() {
           };
           requestAnimationFrame(tick);
         });
-      }, { threshold: 0.6 });
+      }, { threshold: 0.15 });
       document.querySelectorAll('.cn-num[data-target]').forEach(el => cntObs.observe(el));
 
       // year
