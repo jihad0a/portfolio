@@ -696,7 +696,18 @@ document.addEventListener('DOMContentLoaded', function() {
   var $ = function(s) { return document.querySelectorAll(s); };
   var q = function(s) { return document.querySelector(s); };
 
-  // ─── HERO — content visible at load, parallax on scroll ───
+  // ─── Mobile-friendy adjustments ───
+  var mm = gsap.matchMedia();
+  mm.add('(min-width: 768px)', function() {
+    // Desktop animations
+    desktopAnim();
+  });
+  mm.add('(max-width: 767px)', function() {
+    // Mobile: simpler animations
+    mobileAnim();
+  });
+
+  function desktopAnim() {
   var hero = q('#hero');
   if (hero) {
     // Make hero content immediately visible (CSS hides .reveal, GSAP overrides)
@@ -863,6 +874,21 @@ document.addEventListener('DOMContentLoaded', function() {
           scrollTrigger: { trigger: contact, start: 'top 82%', toggleActions: 'play none none none' } }
       );
     }
+  }
+  } // end desktopAnim
+
+  function mobileAnim() {
+    // Mobile: just fade in sections, no heavy parallax/clip
+    var sections = ['services', 'work', 'about', 'reviews', 'blog', 'contact'];
+    sections.forEach(function(id) {
+      var sec = q('#' + id);
+      if (!sec) return;
+      gsap.fromTo(sec.querySelectorAll('.reveal, .card-h, blockquote, article'),
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, stagger: 0.06, duration: 0.5, ease: 'power2.out',
+          scrollTrigger: { trigger: sec, start: 'top 85%', toggleActions: 'play none none none' } }
+      );
+    });
   }
 
   // Refresh ScrollTrigger after setup
