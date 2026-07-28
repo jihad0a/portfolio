@@ -63,10 +63,15 @@ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 .reveal{opacity:0}
 .reveal.visible{opacity:1;transform:translateY(0)}
 .reveal-fade{opacity:0}
+.reveal-fade.visible{opacity:1}
 .reveal-scale{opacity:0}
+.reveal-scale.visible{opacity:1;transform:scale(1)}
 .reveal-left{opacity:0}
+.reveal-left.visible{opacity:1;transform:translateX(0)}
 .reveal-right{opacity:0}
+.reveal-right.visible{opacity:1;transform:translateX(0)}
 .reveal-blur{filter:blur(6px);opacity:0}
+.reveal-blur.visible{filter:blur(0);opacity:1}
 
 /* Image reveal container (GSAP handles clip-path + scale) */
 .pf-reveal{position:relative;overflow:hidden}
@@ -98,11 +103,8 @@ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 .cn{display:inline-block}
 .cn-num{display:inline-block;font-variant-numeric:tabular-nums;transition:all .3s}
 
-/* section transition — subtle scale entrance on viewport entry */
-.section-rise{opacity:.96;transform:scale(.998)}
-
 /* prefers reduced motion */
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;transform:none!important;clip-path:none!important;filter:none!important;opacity:1!important}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
 [x-cloak]{display:none!important}
 </style>
@@ -713,38 +715,37 @@ document.addEventListener('DOMContentLoaded', function() {
   if (hero) {
     // Hero profile image — subtle movement on scroll
     var heroImg = hero.querySelector('.pf img');
-    if (heroImg && !mb) {
+    if (heroImg) {
       gsap.to(heroImg.parentElement, {
-        y: 40,
+        y: mb ? 15 : 40,
         ease: 'none',
         scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: 1 }
       });
     }
 
-    // Hero text content — subtle upward drift (desktop only)
+    // Hero text content — subtle upward drift on scroll
     var heroTexts = hero.querySelectorAll('.reveal');
-    if (heroTexts.length && !mb) {
+    if (heroTexts.length) {
       gsap.to(heroTexts, {
-        y: -15,
+        y: mb ? -8 : -15,
         ease: 'none',
+        startAt: { y: 0 },
         scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: 1.2 }
       });
     }
 
-    // Parallax blobs — desktop only
-    if (!mb) {
-      $('.p-blob').forEach(function(el) {
-        var speed = parseFloat(el.getAttribute('data-speed')) || 0.1;
+    // Parallax blobs — both mobile and desktop
+    $('.p-blob').forEach(function(el) {
+      var speed = parseFloat(el.getAttribute('data-speed')) || 0.1;
         gsap.to(el, {
           y: function() { return window.innerHeight * speed * 0.6; },
           ease: 'none',
           scrollTrigger: { trigger: hero, start: 'top bottom', end: 'bottom top', scrub: 1 }
-        });
-      });
-    }
-  }
+          });
+          });
+          }
 
-  // ─── SERVICES ───
+          // ─── SERVICES ───
   var services = q('#services');
   if (services) {
     var sCards = services.querySelectorAll('.card-h');
