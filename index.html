@@ -61,6 +61,7 @@ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 
 /* ─── HIGH-QUALITY SCROLL REVEALS (controlled by GSAP) ─── */
 .reveal{opacity:0}
+.reveal.visible{opacity:1;transform:translateY(0)}
 .reveal-fade{opacity:0}
 .reveal-scale{opacity:0}
 .reveal-left{opacity:0}
@@ -749,13 +750,9 @@ document.addEventListener('DOMContentLoaded', function() {
     var sCards = services.querySelectorAll('.card-h');
     if (sCards.length) {
       gsap.fromTo(sCards,
-        mb
-          ? { opacity: 0, y: 20 }
-          : { opacity: 0, y: 40, scale: 0.92 },
-        mb
-          ? { opacity: 1, y: 0, stagger: 0.06, duration: 0.5, ease: 'power2.out' }
-          : { opacity: 1, y: 0, scale: 1, stagger: 0.12, duration: 0.9, ease: 'power3.out' },
-        { scrollTrigger: { trigger: services, start: mb ? 'top 85%' : 'top 77%', toggleActions: 'play none none none' } }
+        { opacity: 0, y: mb ? 20 : 40, scale: mb ? 1 : 0.92 },
+        { opacity: 1, y: 0, scale: 1, stagger: mb ? 0.06 : 0.12, duration: mb ? 0.5 : 0.9, ease: 'power3.out',
+          scrollTrigger: { trigger: services, start: mb ? 'top 85%' : 'top 77%', toggleActions: 'play none none none' } }
       );
     }
   }
@@ -823,11 +820,9 @@ document.addEventListener('DOMContentLoaded', function() {
     var revCards = reviews.querySelectorAll('blockquote');
     if (revCards.length) {
       gsap.fromTo(revCards,
-        mb ? { opacity: 0, y: 20 } : { opacity: 0, scale: 0.9, y: 30 },
-        mb
-          ? { opacity: 1, y: 0, stagger: 0.06, duration: 0.5, ease: 'power2.out' }
-          : { opacity: 1, scale: 1, y: 0, stagger: 0.12, duration: 0.9, ease: 'power3.out' },
-        { scrollTrigger: { trigger: reviews, start: mb ? 'top 85%' : 'top 80%', toggleActions: 'play none none none' } }
+        { opacity: 0, y: mb ? 20 : 30, scale: mb ? 1 : 0.9 },
+        { opacity: 1, y: 0, scale: 1, stagger: mb ? 0.06 : 0.12, duration: mb ? 0.5 : 0.9, ease: 'power3.out',
+          scrollTrigger: { trigger: reviews, start: mb ? 'top 85%' : 'top 80%', toggleActions: 'play none none none' } }
       );
     }
   }
@@ -839,10 +834,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (blogCards.length) {
       gsap.fromTo(blogCards,
         { opacity: 0, y: mb ? 20 : 30 },
-        mb
-          ? { opacity: 1, y: 0, stagger: 0.06, duration: 0.5, ease: 'power2.out' }
-          : { opacity: 1, y: 0, stagger: 0.1, duration: 0.8, ease: 'power3.out' },
-        { scrollTrigger: { trigger: blog, start: mb ? 'top 85%' : 'top 82%', toggleActions: 'play none none none' } }
+        { opacity: 1, y: 0, stagger: mb ? 0.06 : 0.1, duration: mb ? 0.5 : 0.8, ease: 'power3.out',
+          scrollTrigger: { trigger: blog, start: mb ? 'top 85%' : 'top 82%', toggleActions: 'play none none none' } }
       );
     }
   }
@@ -854,10 +847,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (contactEls.length) {
       gsap.fromTo(contactEls,
         { opacity: 0, y: 24 },
-        mb
-          ? { opacity: 1, y: 0, stagger: 0.06, duration: 0.5, ease: 'power2.out' }
-          : { opacity: 1, y: 0, stagger: 0.08, duration: 0.7, ease: 'power2.out' },
-        { scrollTrigger: { trigger: contact, start: mb ? 'top 85%' : 'top 82%', toggleActions: 'play none none none' } }
+        { opacity: 1, y: 0, stagger: mb ? 0.06 : 0.08, duration: mb ? 0.5 : 0.7, ease: 'power2.out',
+          scrollTrigger: { trigger: contact, start: mb ? 'top 85%' : 'top 82%', toggleActions: 'play none none none' } }
       );
     }
   }
