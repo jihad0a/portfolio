@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" x-data="app()" :class="{'dark':dark}" class="scroll-smooth">
+<html lang="en" x-data="app()" :class="{'dark':dark}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,6 +16,9 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
@@ -57,31 +60,20 @@ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#006A4E;border-radius:99px}
 
-/* ─── HIGH-QUALITY SCROLL REVEALS ─── */
-.reveal{opacity:0;transition:opacity .75s var(--ease-out),transform 1s cubic-bezier(.215,.61,.355,1)}
-/* Transform variants set via JS for progress-driven motion */
-.reveal-fade{transform:translateY(32px)}
-.reveal-scale{transform:scale(.88)}
-.reveal-left{transform:translateX(-40px)}
-.reveal-right{transform:translateX(40px)}
-.reveal-blur{filter:blur(6px);transform:scale(.95)}
-.reveal-blur.in{filter:blur(0);transform:scale(1)}
+/* ─── HIGH-QUALITY SCROLL REVEALS (controlled by GSAP) ─── */
+.reveal{opacity:0}
+.reveal-fade{opacity:0}
+.reveal-scale{opacity:0}
+.reveal-left{opacity:0}
+.reveal-right{opacity:0}
+.reveal-blur{filter:blur(6px);opacity:0}
 
-.reveal.in{opacity:1;transform:none}
-
-/* Wave stagger — delays set dynamically by JS */
-
-/* Image reveal: clip-path wipe + scale */
+/* Image reveal container (GSAP handles clip-path + scale) */
 .pf-reveal{position:relative;overflow:hidden}
-.pf-reveal img{will-change:transform,clip-path;
-  clip-path:inset(0 0 0 0);transition:clip-path 1.1s var(--ease-out),transform 1.1s var(--ease-out),opacity .8s var(--ease-out);
-  transform:scale(1.08);opacity:.85}
-.pf-reveal.in img{clip-path:inset(0 0 0 0);transform:scale(1);opacity:1}
+.pf-reveal img{will-change:transform}
 
-/* Follow-through card — overshoots then settles */
-.card-h{transition:transform .6s var(--ease-settle),border-color .3s var(--ease-out),box-shadow .3s var(--ease-out)}
-.card-h.in{transform:translateY(0)}
-.card-h:not(.in){transform:translateY(12px)}
+/* Cards (GSAP handles entrance) */
+.card-h{will-change:transform,opacity}
 
 /* Parallax hero blobs */
 .p-blob{will-change:transform;pointer-events:none}
@@ -107,8 +99,7 @@ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 .cn-num{display:inline-block;font-variant-numeric:tabular-nums;transition:all .3s}
 
 /* section transition — subtle scale entrance on viewport entry */
-.section-rise{transition:opacity .8s var(--ease-out),transform .9s var(--ease-out)}
-.section-rise:not(.in){opacity:.96;transform:scale(.998)}
+.section-rise{opacity:.96;transform:scale(.998)}
 
 /* prefers reduced motion */
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;transform:none!important;clip-path:none!important;filter:none!important;opacity:1!important}}
@@ -636,92 +627,26 @@ function app() {
         (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
       this.$watch('dark', v => localStorage.setItem('theme', v ? 'dark' : 'light'));
 
-      const $ = (s) => document.querySelectorAll(s);
+      // nav bg + section tracking (lightweight, no rAF needed here)
+      window.addEventListener('scroll', () => {
+        this.sc = window.scrollY > 20;
+        this.updateSection();
+      }, { passive: true });
+
+      // scroll progress bar
       const sp = document.getElementById('scroll-progress');
-      const pr = document.documentElement;
-      let rafId = null;
-
-      // ─── scroll handler (passive + rAF) ───
-      const onScroll = () => {
-        if (rafId) return;
-        rafId = requestAnimationFrame(() => {
-          const sy = window.scrollY;
-          const bh = document.body.scrollHeight - window.innerHeight;
-
-          // progress bar
-          if (sp) sp.style.width = Math.min((sy / bh) * 100, 100) + '%';
-
-          // nav bg
-          this.sc = sy > 20;
-
-          // active section
-          this.updateSection();
-
-          // ─── parallax blobs ───
-          $('#hero .p-blob').forEach(el => {
-            const s = parseFloat(el.dataset.speed) || 0.1;
-            el.style.transform = 'translateY(' + (sy * s) + 'px)';
+      let ticking = false;
+      window.addEventListener('scroll', () => {
+        if (!ticking) {
+          requestAnimationFrame(() => {
+            if (sp) sp.style.width = Math.min((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100, 100) + '%';
+            ticking = false;
           });
+          ticking = true;
+        }
+      }, { passive: true });
 
-          // ─── progress-driven reveals ───
-          const vh = window.innerHeight;
-          $('#hero .reveal').forEach(el => {
-            const rect = el.getBoundingClientRect();
-            const top = rect.top;
-            const prog = Math.min(Math.max(1 - top / vh, 0), 1);
-            if (prog > 0 && prog < 1) {
-              el.style.opacity = Math.min(prog * 1.3, 1);
-              el.style.transform = 'translateY(' + ((1 - prog) * 32) + 'px)';
-            } else if (prog >= 1) {
-              el.style.opacity = '';
-              el.style.transform = '';
-              el.classList.add('in');
-            }
-          });
-
-          rafId = null;
-        });
-      };
-
-      window.addEventListener('scroll', onScroll, { passive: true });
-      onScroll();
-
-      // ─── IntersectionObserver for non-hero reveals ───
-      const io = new IntersectionObserver(entries => {
-        entries.forEach(e => {
-          if (!e.isIntersecting) return;
-          const el = e.target;
-
-          // wave stagger based on position within parent
-          const parent = el.closest('.grid, .flex-wrap, section') || el.parentElement;
-          const siblings = parent ? Array.from(parent.children).filter(c => c.classList.contains('reveal')) : [el];
-          const idx = siblings.indexOf(el);
-          const total = siblings.length;
-          // sine wave: fast middle, slow edges
-          const waveDelay = Math.sin((idx / Math.max(total - 1, 1)) * Math.PI) * 0.25;
-
-          el.style.transitionDelay = waveDelay + 's';
-          el.classList.add('in');
-          io.unobserve(el);
-
-          // follow-through: after main reveal, add settling wobble
-          if (el.classList.contains('card-h')) {
-            el.style.transition = 'transform .55s cubic-bezier(.34,1.56,.64,1), border-color .3s ease-out';
-            setTimeout(() => {
-              el.style.transition = '';
-            }, 600);
-          }
-        });
-      }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
-
-      // observe all reveals + image reveals
-      $('#hero .reveal').forEach(el => {
-        // hero reveals are progress-driven; only set .in when fully visible
-        if (el.getBoundingClientRect().top < window.innerHeight - 100) el.classList.add('in');
-      });
-      $('.reveal:not(#hero .reveal), .pf-reveal, .card-h').forEach(el => io.observe(el));
-
-      // ─── counter animation ───
+      // counter animation — keep as IntersectionObserver
       const cntObs = new IntersectionObserver(entries => {
         entries.forEach(e => {
           if (!e.isIntersecting) return;
@@ -733,16 +658,14 @@ function app() {
           const start = performance.now();
           const tick = (now) => {
             const p = Math.min((now - start) / dur, 1);
-            // ease-out cubic
-            const v = Math.floor((1 - Math.pow(1 - p, 3)) * target);
-            el.textContent = v;
+            el.textContent = Math.floor((1 - Math.pow(1 - p, 3)) * target);
             if (p < 1) requestAnimationFrame(tick);
             else el.textContent = target;
           };
           requestAnimationFrame(tick);
         });
       }, { threshold: 0.6 });
-      $('.cn-num[data-target]').forEach(el => cntObs.observe(el));
+      document.querySelectorAll('.cn-num[data-target]').forEach(el => cntObs.observe(el));
 
       // year
       document.getElementById('yr').textContent = new Date().getFullYear();
@@ -759,6 +682,194 @@ function app() {
     }
   }
 }
+</script>
+
+<!-- ═══ GSAP + LENIS — HIGH-QUALITY SCROLL ANIMATIONS ═══ -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+  if (typeof gsap === 'undefined') return;
+
+  // ─── Register GSAP plugin ───
+  gsap.registerPlugin(ScrollTrigger);
+
+  // ─── Lenis smooth scroll ───
+  const lenis = new Lenis({
+    duration: 1.15,
+    easing: function(t) { return Math.min(1, 1.001 - Math.pow(2, -10 * t)); },
+    orientation: 'vertical',
+    gestureOrientation: 'vertical',
+    smoothWheel: true,
+    touchMultiplier: 2,
+  });
+  lenis.on('scroll', ScrollTrigger.update);
+  gsap.ticker.add(function(time) { lenis.raf(time * 1000); });
+  gsap.ticker.lagSmoothing(0);
+
+  // Helper: shorter selector
+  var $ = function(s) { return document.querySelectorAll(s); };
+  var q = function(s) { return document.querySelector(s); };
+
+  // ─── HERO — scroll-scrubbed parallax ───
+  var hero = q('#hero');
+  if (hero) {
+    // Pin the hero section — DON'T pin, just scrub content
+    // Profile image parallax (slower)
+    var heroImg = hero.querySelector('.pf img');
+    if (heroImg) {
+      gsap.fromTo(heroImg.parentElement, { y: 40, scale: 0.94 }, {
+        y: 0, scale: 1,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: hero,
+          start: 'top 85%',
+          end: 'top 25%',
+          scrub: 1.2,
+        }
+      });
+    }
+
+    // Hero heading + paragraph + buttons stagger
+    var heroTexts = hero.querySelectorAll('.reveal');
+    gsap.fromTo(heroTexts,
+      { opacity: 0, y: 36 },
+      {
+        opacity: 1, y: 0,
+        stagger: 0.1,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: hero,
+          start: 'top 80%',
+          end: 'top 25%',
+          scrub: 0.8,
+        }
+      }
+    );
+
+    // Parallax blobs
+    $('.p-blob').forEach(function(el) {
+      var speed = parseFloat(el.getAttribute('data-speed')) || 0.1;
+      gsap.to(el, {
+        y: function() { return window.innerHeight * speed * 0.5; },
+        ease: 'none',
+        scrollTrigger: {
+          trigger: hero,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 1,
+        }
+      });
+    });
+  }
+
+  // ─── SERVICES — stagger w/ scale ───
+  var services = q('#services');
+  if (services) {
+    var sHeading = services.querySelectorAll('.reveal');
+    var sCards = services.querySelectorAll('.card-h');
+    gsap.fromTo(sHeading,
+      { opacity: 0, y: 24 },
+      { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out',
+        scrollTrigger: { trigger: services, start: 'top 80%', toggleActions: 'play none none reverse' } }
+    );
+    gsap.fromTo(sCards,
+      { opacity: 0, y: 40, scale: 0.92 },
+      { opacity: 1, y: 0, scale: 1, stagger: 0.12, duration: 0.9, ease: 'power3.out',
+        scrollTrigger: { trigger: services, start: 'top 77%', toggleActions: 'play none none reverse' } }
+    );
+  }
+
+  // ─── WORK — direction-aware entrance ───
+  var work = q('#work');
+  if (work) {
+    var workCards = work.querySelectorAll('.card-h');
+    if (workCards.length > 0) {
+      // First card (large) — slide from left
+      gsap.fromTo(workCards[0],
+        { opacity: 0, x: -60 },
+        { opacity: 1, x: 0, duration: 1, ease: 'power3.out',
+          scrollTrigger: { trigger: work, start: 'top 78%', toggleActions: 'play none none reverse' } }
+      );
+      // Remaining cards — slide from right
+      if (workCards.length > 1) {
+        gsap.fromTo(Array.from(workCards).slice(1),
+          { opacity: 0, x: 40 },
+          { opacity: 1, x: 0, stagger: 0.1, duration: 0.9, ease: 'power3.out',
+            scrollTrigger: { trigger: work, start: 'top 80%', toggleActions: 'play none none reverse' } }
+        );
+      }
+      // Work section heading
+      gsap.fromTo(work.querySelectorAll('.reveal'),
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out',
+          scrollTrigger: { trigger: work, start: 'top 85%', toggleActions: 'play none none reverse' } }
+      );
+    }
+  }
+
+  // ─── ABOUT — image reveal + text stagger ───
+  var about = q('#about');
+  if (about) {
+    var aboutImg = about.querySelector('.pf-reveal');
+    if (aboutImg) {
+      gsap.fromTo(aboutImg,
+        { clipPath: 'inset(0 0 0 100%)' },
+        { clipPath: 'inset(0 0% 0 0%)', duration: 1.4, ease: 'power4.out',
+          scrollTrigger: { trigger: about, start: 'top 75%', toggleActions: 'play none none reverse' } }
+      );
+      gsap.fromTo(aboutImg.querySelector('img'),
+        { scale: 1.12, opacity: 0.8 },
+        { scale: 1, opacity: 1, duration: 1.4, ease: 'power3.out',
+          scrollTrigger: { trigger: about, start: 'top 75%', toggleActions: 'play none none reverse' } }
+      );
+    }
+    // Text blocks
+    var aboutTexts = about.querySelectorAll('.reveal');
+    gsap.fromTo(aboutTexts,
+      { opacity: 0, y: 28 },
+      { opacity: 1, y: 0, stagger: 0.1, duration: 0.8, ease: 'power3.out',
+        scrollTrigger: { trigger: about, start: 'top 78%', toggleActions: 'play none none reverse' } }
+    );
+  }
+
+  // ─── REVIEWS — scale stagger ───
+  var reviews = q('#reviews');
+  if (reviews) {
+    var revCards = reviews.querySelectorAll('blockquote');
+    gsap.fromTo(revCards,
+      { opacity: 0, scale: 0.9, y: 30 },
+      { opacity: 1, scale: 1, y: 0, stagger: 0.12, duration: 0.9, ease: 'power3.out',
+        scrollTrigger: { trigger: reviews, start: 'top 80%', toggleActions: 'play none none reverse' } }
+    );
+  }
+
+  // ─── BLOG — cards stagger ───
+  var blog = q('#blog');
+  if (blog) {
+    var blogCards = blog.querySelectorAll('article');
+    gsap.fromTo(blogCards,
+      { opacity: 0, y: 30 },
+      { opacity: 1, y: 0, stagger: 0.1, duration: 0.8, ease: 'power3.out',
+        scrollTrigger: { trigger: blog, start: 'top 82%', toggleActions: 'play none none reverse' } }
+    );
+  }
+
+  // ─── CONTACT — section fade ───
+  var contact = q('#contact');
+  if (contact) {
+    gsap.fromTo(contact.querySelectorAll('.reveal'),
+      { opacity: 0, y: 24 },
+      { opacity: 1, y: 0, stagger: 0.08, duration: 0.7, ease: 'power2.out',
+        scrollTrigger: { trigger: contact, start: 'top 82%', toggleActions: 'play none none reverse' } }
+    );
+  }
+
+  // Refresh ScrollTrigger after everything is set up
+  ScrollTrigger.refresh();
+
+  // Handle resize
+  window.addEventListener('resize', function() { ScrollTrigger.refresh(); });
+});
 </script>
 
 </body>
