@@ -748,12 +748,22 @@ document.addEventListener('DOMContentLoaded', function() {
           // ─── SERVICES ───
   var services = q('#services');
   if (services) {
+    // Heading scroll-scrubbed
+    var sHeading = services.querySelectorAll('.mb-14 .reveal');
+    if (sHeading.length) {
+      gsap.fromTo(sHeading,
+        { opacity: 0, y: mb ? 15 : 25 },
+        { opacity: 1, y: 0, stagger: 0.06, ease: 'power2.out',
+          scrollTrigger: { trigger: services, start: mb ? 'top 88%' : 'top 83%', end: 'top 60%', scrub: 1 } }
+      );
+    }
+    // Cards scroll-scrubbed
     var sCards = services.querySelectorAll('.card-h');
     if (sCards.length) {
       gsap.fromTo(sCards,
         { opacity: 0, y: mb ? 20 : 40, scale: mb ? 1 : 0.92 },
-        { opacity: 1, y: 0, scale: 1, stagger: mb ? 0.06 : 0.12, duration: mb ? 0.5 : 0.9, ease: 'power3.out',
-          scrollTrigger: { trigger: services, start: mb ? 'top 85%' : 'top 77%', toggleActions: 'play none none none' } }
+        { opacity: 1, y: 0, scale: 1, stagger: mb ? 0.04 : 0.08, ease: 'power3.out',
+          scrollTrigger: { trigger: services, start: mb ? 'top 85%' : 'top 80%', end: 'top 25%', scrub: 1 } }
       );
     }
   }
@@ -761,25 +771,37 @@ document.addEventListener('DOMContentLoaded', function() {
   // ─── WORK — direction-aware ───
   var work = q('#work');
   if (work) {
+    // Heading scroll-scrubbed
+    var wHeading = work.querySelectorAll('.mb-14 .reveal');
+    if (wHeading.length) {
+      gsap.fromTo(wHeading,
+        { opacity: 0, y: mb ? 15 : 25 },
+        { opacity: 1, y: 0, stagger: 0.06, ease: 'power2.out',
+          scrollTrigger: { trigger: work, start: mb ? 'top 88%' : 'top 83%', end: 'top 60%', scrub: 1 } }
+      );
+    }
+    // Cards
     var workCards = work.querySelectorAll('.card-h');
     if (workCards.length > 0) {
       if (mb) {
-        // Mobile: simple stagger fade
+        // Mobile: scroll-scrubbed stagger
         gsap.fromTo(workCards,
           { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, stagger: 0.06, duration: 0.5, ease: 'power2.out',
-            scrollTrigger: { trigger: work, start: 'top 85%', toggleActions: 'play none none none' } }
+          { opacity: 1, y: 0, stagger: 0.04, ease: 'power2.out',
+            scrollTrigger: { trigger: work, start: 'top 85%', end: 'top 25%', scrub: 1 } }
         );
       } else {
-        var tl = gsap.timeline({
-          scrollTrigger: { trigger: work, start: 'top 78%', toggleActions: 'play none none none' }
-        });
-        tl.fromTo(workCards[0], { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 1, ease: 'power3.out' });
+        // Desktop: direction-aware scroll-scrubbed
+        gsap.fromTo(workCards[0],
+          { opacity: 0, x: -60 },
+          { opacity: 1, x: 0, ease: 'power3.out',
+            scrollTrigger: { trigger: work, start: 'top 80%', end: 'top 25%', scrub: 1 } }
+        );
         if (workCards.length > 1) {
-          tl.fromTo(Array.from(workCards).slice(1),
+          gsap.fromTo(Array.from(workCards).slice(1),
             { opacity: 0, x: 40 },
-            { opacity: 1, x: 0, stagger: 0.1, duration: 0.9, ease: 'power3.out' },
-            '-=0.7'
+            { opacity: 1, x: 0, stagger: 0.08, ease: 'power3.out',
+              scrollTrigger: { trigger: work, start: 'top 78%', end: 'top 20%', scrub: 1 } }
           );
         }
       }
@@ -789,28 +811,27 @@ document.addEventListener('DOMContentLoaded', function() {
   // ─── ABOUT ───
   var about = q('#about');
   if (about) {
-    if (!mb) {
-      var aboutImg = about.querySelector('.pf-reveal');
-      if (aboutImg) {
-        gsap.fromTo(aboutImg,
-          { clipPath: 'inset(0 0 0 100%)' },
-          { clipPath: 'inset(0% 0% 0% 0%)', duration: 1.4, ease: 'power4.out',
-            scrollTrigger: { trigger: about, start: 'top 75%', toggleActions: 'play none none none' } }
-        );
-        gsap.fromTo(aboutImg.querySelector('img'),
-          { scale: 1.12, opacity: 0.85 },
-          { scale: 1, opacity: 1, duration: 1.4, ease: 'power3.out',
-            scrollTrigger: { trigger: about, start: 'top 75%', toggleActions: 'play none none none' } }
-        );
-      }
+    // About image clip-path + scale (both mobile and desktop)
+    var aboutImg = about.querySelector('.pf-reveal');
+    if (aboutImg) {
+      gsap.fromTo(aboutImg,
+        { clipPath: 'inset(0 0 0 100%)' },
+        { clipPath: 'inset(0% 0% 0% 0%)', ease: 'power4.out',
+          scrollTrigger: { trigger: about, start: mb ? 'top 80%' : 'top 75%', end: 'top 35%', scrub: 1 } }
+      );
+      gsap.fromTo(aboutImg.querySelector('img'),
+        { scale: 1.12, opacity: 0.85 },
+        { scale: 1, opacity: 1, ease: 'power3.out',
+          scrollTrigger: { trigger: about, start: mb ? 'top 80%' : 'top 75%', end: 'top 35%', scrub: 1 } }
+      );
     }
-    // About text always fades in
+    // About text — scroll-scrubbed fade
     var aboutTexts = about.querySelectorAll('.reveal');
     if (aboutTexts.length) {
       gsap.fromTo(aboutTexts,
         { opacity: 0, y: 28 },
-        { opacity: 1, y: 0, stagger: mb ? 0.06 : 0.1, duration: mb ? 0.5 : 0.8, ease: 'power3.out',
-          scrollTrigger: { trigger: about, start: mb ? 'top 85%' : 'top 78%', toggleActions: 'play none none none' } }
+        { opacity: 1, y: 0, stagger: mb ? 0.04 : 0.08, ease: 'power3.out',
+          scrollTrigger: { trigger: about, start: mb ? 'top 85%' : 'top 78%', end: 'top 30%', scrub: 1 } }
       );
     }
   }
@@ -818,12 +839,22 @@ document.addEventListener('DOMContentLoaded', function() {
   // ─── REVIEWS ───
   var reviews = q('#reviews');
   if (reviews) {
+    // Heading scroll-scrubbed
+    var rHeading = reviews.querySelectorAll('.mb-14 .reveal');
+    if (rHeading.length) {
+      gsap.fromTo(rHeading,
+        { opacity: 0, y: mb ? 15 : 25 },
+        { opacity: 1, y: 0, stagger: 0.06, ease: 'power2.out',
+          scrollTrigger: { trigger: reviews, start: mb ? 'top 88%' : 'top 83%', end: 'top 60%', scrub: 1 } }
+      );
+    }
+    // Cards scroll-scrubbed
     var revCards = reviews.querySelectorAll('blockquote');
     if (revCards.length) {
       gsap.fromTo(revCards,
         { opacity: 0, y: mb ? 20 : 30, scale: mb ? 1 : 0.9 },
-        { opacity: 1, y: 0, scale: 1, stagger: mb ? 0.06 : 0.12, duration: mb ? 0.5 : 0.9, ease: 'power3.out',
-          scrollTrigger: { trigger: reviews, start: mb ? 'top 85%' : 'top 80%', toggleActions: 'play none none none' } }
+        { opacity: 1, y: 0, scale: 1, stagger: mb ? 0.04 : 0.08, ease: 'power3.out',
+          scrollTrigger: { trigger: reviews, start: mb ? 'top 85%' : 'top 80%', end: 'top 25%', scrub: 1 } }
       );
     }
   }
@@ -831,12 +862,22 @@ document.addEventListener('DOMContentLoaded', function() {
   // ─── BLOG ───
   var blog = q('#blog');
   if (blog) {
+    // Heading scroll-scrubbed
+    var bHeading = blog.querySelectorAll('.mb-14 .reveal');
+    if (bHeading.length) {
+      gsap.fromTo(bHeading,
+        { opacity: 0, y: mb ? 15 : 25 },
+        { opacity: 1, y: 0, stagger: 0.06, ease: 'power2.out',
+          scrollTrigger: { trigger: blog, start: mb ? 'top 88%' : 'top 83%', end: 'top 60%', scrub: 1 } }
+      );
+    }
+    // Cards scroll-scrubbed
     var blogCards = blog.querySelectorAll('article');
     if (blogCards.length) {
       gsap.fromTo(blogCards,
         { opacity: 0, y: mb ? 20 : 30 },
-        { opacity: 1, y: 0, stagger: mb ? 0.06 : 0.1, duration: mb ? 0.5 : 0.8, ease: 'power3.out',
-          scrollTrigger: { trigger: blog, start: mb ? 'top 85%' : 'top 82%', toggleActions: 'play none none none' } }
+        { opacity: 1, y: 0, stagger: mb ? 0.04 : 0.08, ease: 'power3.out',
+          scrollTrigger: { trigger: blog, start: mb ? 'top 85%' : 'top 82%', end: 'top 25%', scrub: 1 } }
       );
     }
   }
@@ -848,8 +889,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (contactEls.length) {
       gsap.fromTo(contactEls,
         { opacity: 0, y: 24 },
-        { opacity: 1, y: 0, stagger: mb ? 0.06 : 0.08, duration: mb ? 0.5 : 0.7, ease: 'power2.out',
-          scrollTrigger: { trigger: contact, start: mb ? 'top 85%' : 'top 82%', toggleActions: 'play none none none' } }
+        { opacity: 1, y: 0, stagger: mb ? 0.04 : 0.06, ease: 'power2.out',
+          scrollTrigger: { trigger: contact, start: mb ? 'top 85%' : 'top 82%', end: 'top 30%', scrub: 1 } }
       );
     }
   }
