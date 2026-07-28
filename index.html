@@ -38,6 +38,16 @@ html,body{font-family:'DM Sans',sans-serif}
 h1,h2,h3,h4,h5,h6{font-family:'PT Sans',sans-serif}
 body{transition:background-color .3s,color .3s}
 
+/* Easing tokens */
+:root{
+  --ease-out: cubic-bezier(.215,.61,.355,1);           /* Material exit */
+  --ease-in: cubic-bezier(.55,.055,.675,.19);          /* Material enter */
+  --ease-in-out: cubic-bezier(.645,.045,.355,1);       /* Material standard */
+  --ease-spring: cubic-bezier(.34,1.56,.64,1);         /* Overshoot spring */
+  --ease-settle: cubic-bezier(.25,.46,.45,.94);        /* Follow-through settle */
+  --ease-wobble: cubic-bezier(.68,-.6,.32,1.6);        /* Playful bounce */
+}
+
 /* noise overlay */
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.35;
 background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E")}
@@ -47,23 +57,38 @@ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#006A4E;border-radius:99px}
 
-/* reveal on scroll — multiple types */
-.reveal{opacity:0;transition:opacity .6s ease-out,transform .6s cubic-bezier(.17,.67,.29,1.01)}
-.reveal-fade{transform:translateY(24px)}
-.reveal-scale{transform:scale(.92)}
-.reveal-left{transform:translateX(-30px)}
-.reveal-right{transform:translateX(30px)}
+/* ─── HIGH-QUALITY SCROLL REVEALS ─── */
+.reveal{opacity:0;transition:opacity .75s var(--ease-out),transform 1s cubic-bezier(.215,.61,.355,1)}
+/* Transform variants set via JS for progress-driven motion */
+.reveal-fade{transform:translateY(32px)}
+.reveal-scale{transform:scale(.88)}
+.reveal-left{transform:translateX(-40px)}
+.reveal-right{transform:translateX(40px)}
+.reveal-blur{filter:blur(6px);transform:scale(.95)}
+.reveal-blur.in{filter:blur(0);transform:scale(1)}
 
 .reveal.in{opacity:1;transform:none}
-.d1{transition-delay:.07s}.d2{transition-delay:.15s}.d3{transition-delay:.23s}.d4{transition-delay:.31s}.d5{transition-delay:.39s}.d6{transition-delay:.47s}
 
-/* img crossfade on scroll */
-.pf-reveal img{transform:scale(1.05);transition:transform .8s cubic-bezier(.17,.67,.29,1.01),opacity .8s ease-out;opacity:.85}
-.pf-reveal.in img{transform:scale(1);opacity:1}
+/* Wave stagger — delays set dynamically by JS */
 
-/* nav underline — active section only (no hover) */
+/* Image reveal: clip-path wipe + scale */
+.pf-reveal{position:relative;overflow:hidden}
+.pf-reveal img{will-change:transform,clip-path;
+  clip-path:inset(0 0 0 0);transition:clip-path 1.1s var(--ease-out),transform 1.1s var(--ease-out),opacity .8s var(--ease-out);
+  transform:scale(1.08);opacity:.85}
+.pf-reveal.in img{clip-path:inset(0 0 0 0);transform:scale(1);opacity:1}
+
+/* Follow-through card — overshoots then settles */
+.card-h{transition:transform .6s var(--ease-settle),border-color .3s var(--ease-out),box-shadow .3s var(--ease-out)}
+.card-h.in{transform:translateY(0)}
+.card-h:not(.in){transform:translateY(12px)}
+
+/* Parallax hero blobs */
+.p-blob{will-change:transform;pointer-events:none}
+
+/* nav underline */
 .nl{position:relative}
-.nl::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:1.5px;background:currentColor;transition:width .22s cubic-bezier(.4,0,.2,1)}
+.nl::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:1.5px;background:currentColor;transition:width .35s var(--ease-out)}
 .nl.on::after{width:100%}
 .nl.on{font-weight:500}
 
@@ -74,18 +99,19 @@ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 .pf{overflow:hidden;background:#d4d4d8}
 .pf img{width:100%;height:100%;object-fit:cover;display:block}
 
-/* card (scroll-reveal only) */
-.card-h{border-width:1px}
-
 /* scroll progress bar */
-#scroll-progress{position:fixed;top:0;left:0;z-index:9999;height:2.5px;background:#006A4E;width:0%;transition:width .1s linear;pointer-events:none}
+#scroll-progress{position:fixed;top:0;left:0;z-index:9999;height:2.5px;background:#006A4E;width:0%;transition:width .08s linear;pointer-events:none}
 
 /* counter anim */
 .cn{display:inline-block}
-.cn-num{display:inline-block;transition:all .3s}
+.cn-num{display:inline-block;font-variant-numeric:tabular-nums;transition:all .3s}
+
+/* section transition — subtle scale entrance on viewport entry */
+.section-rise{transition:opacity .8s var(--ease-out),transform .9s var(--ease-out)}
+.section-rise:not(.in){opacity:.96;transform:scale(.998)}
 
 /* prefers reduced motion */
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;transform:none!important;clip-path:none!important;filter:none!important;opacity:1!important}}
 
 [x-cloak]{display:none!important}
 </style>
@@ -153,8 +179,8 @@ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 
 <!-- ═══ HERO ═══ -->
 <section id="hero" class="relative min-h-screen flex items-center pt-16 overflow-hidden">
-  <div class="absolute top-1/4 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
-  <div class="absolute bottom-1/4 left-0 w-64 h-64 bg-zinc-200/50 dark:bg-zinc-800/30 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+  <div class="absolute top-1/4 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl pointer-events-none p-blob" aria-hidden="true" data-speed="0.15"></div>
+  <div class="absolute bottom-1/4 left-0 w-64 h-64 bg-zinc-200/50 dark:bg-zinc-800/30 rounded-full blur-3xl pointer-events-none p-blob" aria-hidden="true" data-speed="-0.08"></div>
 
   <div class="relative z-10 max-w-6xl mx-auto px-6 py-24 w-full">
     <div class="grid md:grid-cols-2 gap-12 items-center">
@@ -610,52 +636,113 @@ function app() {
         (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
       this.$watch('dark', v => localStorage.setItem('theme', v ? 'dark' : 'light'));
 
-      // scroll progress bar
+      const $ = (s) => document.querySelectorAll(s);
       const sp = document.getElementById('scroll-progress');
-      const updProg = () => { if(sp){const p=window.scrollY/(document.body.scrollHeight-window.innerHeight);sp.style.width=Math.min(p*100,100)+'%'}};
+      const pr = document.documentElement;
+      let rafId = null;
 
-      // scroll
-      window.addEventListener('scroll', () => {
-        this.sc = window.scrollY > 20;
-        this.updateSection();
-        updProg();
-      }, { passive: true });
-      updProg();
+      // ─── scroll handler (passive + rAF) ───
+      const onScroll = () => {
+        if (rafId) return;
+        rafId = requestAnimationFrame(() => {
+          const sy = window.scrollY;
+          const bh = document.body.scrollHeight - window.innerHeight;
 
-      // reveal — all types
+          // progress bar
+          if (sp) sp.style.width = Math.min((sy / bh) * 100, 100) + '%';
+
+          // nav bg
+          this.sc = sy > 20;
+
+          // active section
+          this.updateSection();
+
+          // ─── parallax blobs ───
+          $('#hero .p-blob').forEach(el => {
+            const s = parseFloat(el.dataset.speed) || 0.1;
+            el.style.transform = 'translateY(' + (sy * s) + 'px)';
+          });
+
+          // ─── progress-driven reveals ───
+          const vh = window.innerHeight;
+          $('#hero .reveal').forEach(el => {
+            const rect = el.getBoundingClientRect();
+            const top = rect.top;
+            const prog = Math.min(Math.max(1 - top / vh, 0), 1);
+            if (prog > 0 && prog < 1) {
+              el.style.opacity = Math.min(prog * 1.3, 1);
+              el.style.transform = 'translateY(' + ((1 - prog) * 32) + 'px)';
+            } else if (prog >= 1) {
+              el.style.opacity = '';
+              el.style.transform = '';
+              el.classList.add('in');
+            }
+          });
+
+          rafId = null;
+        });
+      };
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+
+      // ─── IntersectionObserver for non-hero reveals ───
       const io = new IntersectionObserver(entries => {
         entries.forEach(e => {
-          if (e.isIntersecting) {
-            e.target.classList.add('in');
-            io.unobserve(e.target);
+          if (!e.isIntersecting) return;
+          const el = e.target;
+
+          // wave stagger based on position within parent
+          const parent = el.closest('.grid, .flex-wrap, section') || el.parentElement;
+          const siblings = parent ? Array.from(parent.children).filter(c => c.classList.contains('reveal')) : [el];
+          const idx = siblings.indexOf(el);
+          const total = siblings.length;
+          // sine wave: fast middle, slow edges
+          const waveDelay = Math.sin((idx / Math.max(total - 1, 1)) * Math.PI) * 0.25;
+
+          el.style.transitionDelay = waveDelay + 's';
+          el.classList.add('in');
+          io.unobserve(el);
+
+          // follow-through: after main reveal, add settling wobble
+          if (el.classList.contains('card-h')) {
+            el.style.transition = 'transform .55s cubic-bezier(.34,1.56,.64,1), border-color .3s ease-out';
+            setTimeout(() => {
+              el.style.transition = '';
+            }, 600);
           }
         });
-      }, { threshold: 0.12, rootMargin: '0px 0px -48px 0px' });
-      document.querySelectorAll('.reveal,.pf-reveal').forEach(el => io.observe(el));
+      }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
 
-      // counter animation
+      // observe all reveals + image reveals
+      $('#hero .reveal').forEach(el => {
+        // hero reveals are progress-driven; only set .in when fully visible
+        if (el.getBoundingClientRect().top < window.innerHeight - 100) el.classList.add('in');
+      });
+      $('.reveal:not(#hero .reveal), .pf-reveal, .card-h').forEach(el => io.observe(el));
+
+      // ─── counter animation ───
       const cntObs = new IntersectionObserver(entries => {
         entries.forEach(e => {
-          if (e.isIntersecting) {
-            const el = e.target;
-            const target = parseInt(el.dataset.target);
-            if (!target) return;
-            cntObs.unobserve(el);
-            const dur = 1200;
-            const step = Math.max(1, Math.floor(target / 30));
-            const start = performance.now();
-            const tick = (now) => {
-              const p = Math.min((now - start) / dur, 1);
-              const eased = 1 - Math.pow(1 - p, 3);
-              el.textContent = Math.floor(eased * target);
-              if (p < 1) requestAnimationFrame(tick);
-              else el.textContent = target;
-            };
-            requestAnimationFrame(tick);
-          }
+          if (!e.isIntersecting) return;
+          const el = e.target;
+          const target = parseInt(el.dataset.target);
+          if (!target) return;
+          cntObs.unobserve(el);
+          const dur = target > 10 ? 1600 : 1200;
+          const start = performance.now();
+          const tick = (now) => {
+            const p = Math.min((now - start) / dur, 1);
+            // ease-out cubic
+            const v = Math.floor((1 - Math.pow(1 - p, 3)) * target);
+            el.textContent = v;
+            if (p < 1) requestAnimationFrame(tick);
+            else el.textContent = target;
+          };
+          requestAnimationFrame(tick);
         });
-      }, { threshold: 0.5 });
-      document.querySelectorAll('.cn-num[data-target]').forEach(el => cntObs.observe(el));
+      }, { threshold: 0.6 });
+      $('.cn-num[data-target]').forEach(el => cntObs.observe(el));
 
       // year
       document.getElementById('yr').textContent = new Date().getFullYear();
